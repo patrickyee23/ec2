@@ -7,12 +7,21 @@ terraform {
   }
 }
 
+variable "type" {
+  type    = string
+  default = "amazon"
+}
+
 provider "aws" {
   region = "us-west-2"
 }
 
-data "aws_ssm_parameter" "amazon_linux_ami" {
+data "aws_ssm_parameter" "amazon" {
   name = "/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2"
+}
+
+data "aws_ssm_parameter" "docker" {
+  name = "/app/latest-ami/docker-runtime-ami/master"
 }
 
 data "aws_ssm_parameter" "vpc_id" {
@@ -54,7 +63,7 @@ resource "aws_security_group" "allow_all_outbound_sg" {
 }
 
 resource "aws_spot_instance_request" "my_instance" {
-  ami           = data.aws_ssm_parameter.amazon_linux_ami.value
+  ami           = var.type == "amazon" ? data.aws_ssm_parameter.amazon.value : data.aws_ssm_parameter.docker.value
   instance_type = "t3.large"
   key_name      = "pyee"
   spot_price    = "0.0832"
