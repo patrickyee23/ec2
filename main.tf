@@ -22,6 +22,11 @@ variable "spot_price" {
   default = 0.0832
 }
 
+variable "key_name" {
+  type    = string
+  default = "pyee"
+}
+
 provider "aws" {
   region = "us-west-2"
 }
@@ -75,7 +80,7 @@ resource "aws_security_group" "allow_all_outbound_sg" {
 resource "aws_spot_instance_request" "my_instance" {
   ami           = var.type == "amazon" ? data.aws_ssm_parameter.amazon.value : data.aws_ssm_parameter.docker.value
   instance_type = var.instance_type
-  key_name      = "pyee"
+  key_name      = var.key_name
   spot_price    = var.spot_price
   spot_type     = "one-time"
   subnet_id     = element(split(",", data.aws_ssm_parameter.protected_subnet_ids.value), 1)
