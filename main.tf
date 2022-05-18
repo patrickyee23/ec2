@@ -60,6 +60,30 @@ variable "resource_tags" {
   }
 }
 
+resource "aws_iam_instance_profile" "profile" {
+  role = aws_iam_role.role.name
+}
+
+resource "aws_iam_role" "role" {
+  path = "/"
+
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": "allowassume"
+        }
+    ]
+}
+EOF
+}
+
 resource "aws_security_group" "allow_all_outbound_sg" {
   name        = "allow_all_outbound_sg"
   description = "Allow all outbound traffic"
@@ -78,12 +102,13 @@ resource "aws_security_group" "allow_all_outbound_sg" {
 }
 
 resource "aws_spot_instance_request" "my_instance" {
-  ami           = var.type == "amazon" ? data.aws_ssm_parameter.amazon.value : data.aws_ssm_parameter.docker.value
-  instance_type = var.instance_type
-  key_name      = var.key_name
-  spot_price    = var.spot_price
-  spot_type     = "one-time"
-  subnet_id     = element(split(",", data.aws_ssm_parameter.protected_subnet_ids.value), 1)
+  ami                  = var.type == "amazon" ? data.aws_ssm_parameter.amazon.value : data.aws_ssm_parameter.docker.value
+  instance_type        = var.instance_type
+  key_name             = var.key_name
+  iam_instance_profile = aws_iam_instance_profile.profile.id
+  spot_price           = var.spot_price
+  spot_type            = "one-time"
+  subnet_id            = element(split(",", data.aws_ssm_parameter.protected_subnet_ids.value), 1)
   vpc_security_group_ids = [
     data.aws_ssm_parameter.ssh_sg_id.value,
     aws_security_group.allow_all_outbound_sg.id,
