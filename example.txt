@@ -1,1 +1,2 @@
-terraform apply -var=type=docker -var=instance_type=c5.4xlarge -var=spot_price=0.68
+terraform apply -var=ami_id=ami-xxxxx -var=instance_type=c5.4xlarge
+terraform apply -var=instance_type=c5.4xlarge
