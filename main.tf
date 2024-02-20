@@ -76,6 +76,11 @@ resource "aws_spot_instance_request" "my_instance" {
   ami                  = var.ami_id == "amazon" ? data.aws_ssm_parameter.amazon.value : var.ami_id
   instance_type        = var.instance_type
   key_name             = var.key_name
+  root_block_device {
+    delete_on_termination = true
+    volume_size           = 50
+    volume_type           = "gp2"
+  }
   spot_type            = "one-time"
   subnet_id            = element(split(",", data.aws_ssm_parameter.protected_subnet_ids.value), 1)
   vpc_security_group_ids = [
