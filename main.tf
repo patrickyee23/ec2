@@ -14,7 +14,7 @@ variable "ami_id" {
 
 variable "instance_type" {
   type    = string
-  default = "t3.large"
+  default = "c6a.2xlarge"
 }
 
 variable "key_name" {
@@ -76,6 +76,7 @@ resource "aws_spot_instance_request" "my_instance" {
   ami                  = var.ami_id == "amazon" ? data.aws_ssm_parameter.amazon.value : var.ami_id
   instance_type        = var.instance_type
   key_name             = var.key_name
+  user_data            = file("user_data.sh")
   root_block_device {
     delete_on_termination = true
     volume_size           = 50
