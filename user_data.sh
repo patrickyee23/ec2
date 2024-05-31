@@ -1,5 +1,5 @@
 #!/bin/bash
-yum install -y git bzip2-devel docker libffi-devel mariadb105-devel readline-devel openssl-devel sqlite-devel xz-devel zlib-devel
+yum install -y git bzip2-devel docker htop libffi-devel mariadb105-devel readline-devel openssl-devel sqlite-devel xz-devel zlib-devel
 yum groupinstall -y "Development Tools"
 systemctl enable docker
 systemctl start docker
