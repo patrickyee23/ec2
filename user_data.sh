@@ -22,7 +22,7 @@ echo 'eval "$(pyenv init --path)"' >> ~ec2-user/.profile
 
 echo 'eval "$(pyenv init -)"' >> ~ec2-user/.bashrc
 
-echo "[user]\nemail = pyee@23andme.com\nname = Patrick Yee\n" > ~ec2-user/.gitconfig
+echo -e "[user]\n    email = pyee@23andme.com\n    name = Patrick Yee\n" > ~ec2-user/.gitconfig
 
 chown ec2-user:ec2-user ~ec2-user/.bash_profile
 chown ec2-user:ec2-user ~ec2-user/.bashrc
