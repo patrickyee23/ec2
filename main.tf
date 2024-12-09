@@ -77,26 +77,59 @@ resource "aws_security_group" "allow_all_outbound_sg" {
   tags = var.resource_tags
 }
 
-resource "aws_spot_instance_request" "my_instance" {
-  ami                  = var.ami_id == "amazon" ? data.aws_ssm_parameter.amazon.value : var.ami_id
-  instance_type        = var.instance_type
-  key_name             = var.key_name
-  user_data            = file("user_data.sh")
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 50
-    volume_type           = "gp2"
-  }
-  spot_type            = "one-time"
-  subnet_id            = element(split(",", data.aws_ssm_parameter.protected_subnet_ids.value), 1)
-  iam_instance_profile = var.instance_profile
-  vpc_security_group_ids = [
-    data.aws_ssm_parameter.ssh_sg_id.value,
-    aws_security_group.allow_all_outbound_sg.id,
-  ]
-  wait_for_fulfillment = "true"
+resource "aws_launch_template" "my_launch_template" {
+  name_prefix   = "pyee-ec2"
+  image_id      = var.ami_id == "amazon" ? data.aws_ssm_parameter.amazon.value : var.ami_id
+  key_name      = var.key_name
+  user_data     = filebase64("user_data.sh")
 
-  tags = var.resource_tags
+  instance_requirements {
+    allowed_instance_types = ["c*", "m*", "r*"]
+    memory_mib {
+      min = 8192
+    }
+    vcpu_count {
+      min = 4
+    }
+  }
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 50
+      volume_type           = "gp2"
+    }
+  }
+
+  network_interfaces {
+    associate_public_ip_address = false
+    device_index                = 0
+    subnet_id                   = element(split(",", data.aws_ssm_parameter.protected_subnet_ids.value), 1)
+    security_groups             = [data.aws_ssm_parameter.ssh_sg_id.value, aws_security_group.allow_all_outbound_sg.id]
+  }
+
+  instance_market_options {
+    market_type = "spot"
+  }
+
+
+  iam_instance_profile {
+    name = var.instance_profile
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags          = var.resource_tags
+  }
+}
+
+resource "aws_instance" "my_instance" {
+  launch_template {
+    id      = aws_launch_template.my_launch_template.id
+    version = "$Latest"
+  }
+  instance_type = var.instance_type
 }
 
 resource "aws_route53_record" "record" {
@@ -104,17 +137,17 @@ resource "aws_route53_record" "record" {
   name    = "pyee-ec2"
   type    = "A"
   ttl     = 300
-  records = [aws_spot_instance_request.my_instance.private_ip]
+  records = [aws_instance.my_instance.private_ip]
 }
 
 output "instance_id" {
   description = "ID of the EC2 instance"
-  value       = aws_spot_instance_request.my_instance.spot_instance_id
+  value       = aws_instance.my_instance.id
 }
 
 output "instance_private_ip" {
   description = "Private IP address of the EC2 instance"
-  value       = aws_spot_instance_request.my_instance.private_ip
+  value       = aws_instance.my_instance.private_ip
 }
 
 output "instance_route53_fqdn" {
