@@ -17,6 +17,11 @@ variable "instance_type" {
   default = "c6a.2xlarge"
 }
 
+variable "spot" {
+  type    = bool
+  default = true
+}
+
 variable "key_name" {
   type    = string
   default = "pyee"
@@ -109,10 +114,12 @@ resource "aws_launch_template" "my_launch_template" {
     security_groups             = [data.aws_ssm_parameter.ssh_sg_id.value, aws_security_group.allow_all_outbound_sg.id]
   }
 
-  instance_market_options {
-    market_type = "spot"
+  dynamic "instance_market_options" {
+    for_each = var.spot ? [1] : []
+    content {
+      market_type = "spot"
+    }
   }
-
 
   iam_instance_profile {
     name = var.instance_profile
