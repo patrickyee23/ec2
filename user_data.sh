@@ -29,4 +29,4 @@ chown ec2-user:ec2-user ~ec2-user/.bashrc
 chown ec2-user:ec2-user ~ec2-user/.profile
 chown ec2-user:ec2-user ~ec2-user/.gitconfig
 
-su - ec2-user -c "source ~/.bash_profile && pyenv install 3.9.19 && pyenv install 3.11.9"
+su - ec2-user -c "source ~/.bash_profile && pyenv install 3.9.21 && pyenv install 3.11.11 && pyenv install 3.12.8"
