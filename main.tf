@@ -143,7 +143,7 @@ resource "aws_route53_record" "record" {
   zone_id = data.aws_ssm_parameter.route53_zone_id.value
   name    = "pyee-ec2"
   type    = "A"
-  ttl     = 300
+  ttl     = 60
   records = [aws_instance.my_instance.private_ip]
 }
 
