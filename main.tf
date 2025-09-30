@@ -9,17 +9,17 @@ terraform {
 
 variable "ami_id" {
   type    = string
-  default = "amazon"
+  default = "foundation2023"
 }
 
 variable "instance_type" {
   type    = string
-  default = "c6a.2xlarge"
+  default = "c8g.2xlarge"
 }
 
 variable "spot" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "key_name" {
@@ -36,8 +36,8 @@ provider "aws" {
   region = "us-west-2"
 }
 
-data "aws_ssm_parameter" "amazon" {
-  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+data "aws_ssm_parameter" "foundation2023" {
+  name = "/app/latest-ami/foundation-al2023-ami-hvm-arm64-ebs/main"
 }
 
 data "aws_ssm_parameter" "vpc_id" {
@@ -83,10 +83,10 @@ resource "aws_security_group" "allow_all_outbound_sg" {
 }
 
 resource "aws_launch_template" "my_launch_template" {
-  name_prefix   = "pyee-ec2"
-  image_id      = var.ami_id == "amazon" ? data.aws_ssm_parameter.amazon.value : var.ami_id
-  key_name      = var.key_name
-  user_data     = filebase64("user_data.sh")
+  name_prefix = "pyee-ec2"
+  image_id    = var.ami_id == "foundation2023" ? data.aws_ssm_parameter.foundation2023.value : var.ami_id
+  key_name    = var.key_name != "none" ? var.key_name : null
+  user_data   = filebase64("user_data.sh")
 
   instance_requirements {
     allowed_instance_types = ["c*", "m*", "r*"]
