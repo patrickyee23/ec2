@@ -8,7 +8,7 @@ instance_id:
 	@terraform output -raw instance_id
 
 start stop:
-	@aws ec2 $@ --instance-ids `make instance_id`
+	@aws ec2 $@-instances --instance-ids `make instance_id`
 
 connect:
 	@aws ssm start-session --target `make instance_id`
